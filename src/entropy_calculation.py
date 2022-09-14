@@ -1,5 +1,6 @@
 import json
 import numpy as np
+import matplotlib.pyplot as plt	
 
 def read_data(path: str):
     return [json.loads(line) for line in open(path).readlines()]
@@ -25,13 +26,25 @@ def get_english_vocab(corpus):
             english_dic[word] = 1
     return sorted(english_dic.items(), key = lambda x : x[1], reverse = True)
 
-def calculate_entropy(vocab):
+def entropy(vocab):
     stats = [item[1] for item in vocab]
     total = sum(stats)
     normed_stats = [stats[i] / total for i in range(len(stats))]
     return - sum([prob*np.log2(prob) for prob in normed_stats])
 
 if __name__ == '__main__':
-    corpus = read_data('../data/chinese_corpus.json')
-    chinese_vocab = get_chinese_vocab(corpus)
-    print(calculate_entropy(chinese_vocab))
+    chinese_corpus = read_data('../data/chinese_corpus.json')
+
+    split_index = [849 * i for i in range(1, 36)]
+    split_index[-1] = len(chinese_corpus)
+    print(len(split_index))
+    chinese_entropy = []
+    for index in split_index:
+        chinese_vocab = get_chinese_vocab(chinese_corpus[0: index])
+        chinese_entropy.append(entropy(chinese_vocab))
+    
+    plt.plot(split_index, chinese_entropy)
+    plt.xlabel('Number of essays')
+    plt.ylabel('Entropy')
+    plt.ylim([0, 10])
+    plt.show()
